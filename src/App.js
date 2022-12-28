@@ -1,21 +1,58 @@
-import {Box, ChakraProvider, Container, Flex, Grid, Stack, Text, VStack} from "@chakra-ui/react";
+import {Box, ChakraProvider, Container, Flex, Grid, Input, Stack, Text, VStack} from "@chakra-ui/react";
 import {DndContext} from "@dnd-kit/core";
 import {Draggable} from "./dnd/Draggable";
 import {Droppable} from "./dnd/Droppable";
 import {useState} from "react";
+import structuredClone from '@ungap/structured-clone';
 
 function App() {
 
-    const containers = ['Text', 'Image'];
-    const [parent, setParent] = useState(null);
+    const containers = [
+        {
+            name: 'Text',
+            type: 'text'
+        },
+        {
+            name: 'Image',
+            type: 'image'
+        }
+    ];
+    const [parent, setParent] = useState([]);
 
     const handleDragEnd = (event) => {
-        const {over} = event;
-
-        // If the item is dropped over a container, set it as the parent
-        // otherwise reset the parent to `null`
-        setParent(over ? over.id : null);
+        const {active, over, delta} = event;
+        console.log('Delta', over, ['groupText', 'groupImage'].includes(active.data.current.type))
+        if (over && over.data.current.accepts.includes(active.data.current.type)) {
+            const typedElement = {
+                ...delta,
+                ...active.data.current,
+                name: 'GroupText',
+                type: 'groupText',
+            }
+            setParent([...parent, typedElement])
+        } else if (['groupText', 'groupImage'].includes(active.data.current.type)) {
+            const newData = structuredClone(parent);
+            newData[active.data.current.index]['x'] = parent[active.data.current.index]['x'] + delta.x;
+            newData[active.data.current.index]['y'] = parent[active.data.current.index]['y'] + delta.y;
+            setParent(newData);
+        }
     }
+
+    const renderTypedElement = parent.length ? parent.map((element, index) => {
+        if (element.type === 'groupText') {
+            return <Draggable id={index + 10} key={index + 10} type={element.type}
+                              name={element.name} x={element.x} y={element.y} index={index}>
+                <Flex width={"20rem"} height={"8rem"}
+                     bgColor={"white"} borderRadius={".8rem"} boxShadow={"md"}
+                     padding={"1rem"} justifyContent={"flex-start"} flexDirection={"column"}>
+                    <Text w={"max-content"} mb={"1rem"} fontWeight={"bold"} color={"#555"}>Group#{index + 1}</Text>
+                    <Input placeholder='Click to edit...' borderColor={"#e4e4e7"} padding={"0.75rem"} borderRadius={"8px"} bgColor={"#fafafa"}/>
+                </Flex>
+            </Draggable>
+        }
+
+        return <></>
+    }) : <></>
 
     return (
         <ChakraProvider>
@@ -40,7 +77,6 @@ function App() {
                         <Box></Box>
                     </Flex>
                     <Container position={"relative"} maxW={"100%"} height={"calc(100% - 56px)"} padding={"0"}>
-
                         <Droppable>
                             <Box width={"22em"} bgColor={"white"} borderColor={"#e4e4e7"}
                                  position={"absolute"} top={"5"} left={"5"} bottom={"5"}
@@ -52,11 +88,12 @@ function App() {
                                             <Text as='b'>Bubbles</Text>
                                             <Grid templateColumns='repeat(2, 1fr)' gap={6} mt={".7rem"}>
 
-                                                {containers.map((item, index) => {
-                                                    return <Draggable id={index + 1} key={index + 1}>
+                                                {containers.map((element, index) => {
+                                                    return <Draggable id={index + 1} key={index + 1} type={element.type}
+                                                                      name={element.name} index={index}>
                                                         <Flex alignItems='center' padding={".5rem"} bgColor={"#fafafa"}
                                                               borderWidth={"1px"} borderRadius={"10px"}>
-                                                            <Text color={"#555"}>{item}</Text>
+                                                            <Text color={"#555"}>{element.name}</Text>
                                                         </Flex>
                                                     </Draggable>
                                                 })}
@@ -65,6 +102,8 @@ function App() {
                                     </VStack>
                                 </Stack>
                             </Box>
+
+                            {renderTypedElement}
                         </Droppable>
                     </Container>
                 </Container>

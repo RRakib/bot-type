@@ -5,6 +5,9 @@ import {Box} from "@chakra-ui/react";
 export const Droppable = (props) => {
     const {isOver, setNodeRef} = useDroppable({
         id: 'droppable',
+        data: {
+            accepts: ['text', 'image'],
+        },
     });
     const style = {
         color: isOver ? 'green' : undefined,

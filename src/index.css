@@ -13,3 +13,11 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.react-icon-svg {
+  stroke-width: .3;
+}
+
+input {
+  box-shadow: none !important;
+}

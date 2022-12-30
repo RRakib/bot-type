@@ -9,8 +9,8 @@ export function Draggable(props) {
             type: props.type,
             index: props.index,
         },
+        disabled: props.dragDisabled
     });
-    // console.log((props.x ?? 0) , (transform?.x ?? 0))
     const style = (transform || (props.x && props.y)) ? {
         transform: `translate3d(${((props.x ?? 0) + (transform?.x ?? 0))}px, ${((props.y ?? 0) + (transform?.y ?? 0))}px, 0)`,
     } : undefined;

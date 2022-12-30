@@ -21,3 +21,10 @@ code {
 input {
   box-shadow: none !important;
 }
+
+.connector {
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
